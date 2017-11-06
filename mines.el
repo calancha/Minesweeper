@@ -102,7 +102,7 @@
 If `easy' we have 8 columns x 8 columns and 10 mines.
 If `medium' we have 16 columns x 16 columns and 40 mines.
 If `hard' we have 30 columns x 16 columns and 99 mines.
-If `custiom' then ask user for these numbers."
+If `custom' then ask user for these numbers."
   :type '(choice (const :tag "Easy" easy)
                  (const :tag "Medium" medium)
                  (const :tag "Hard" hard)
