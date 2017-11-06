@@ -568,8 +568,8 @@ call this command again, the cell is unflagged."
   (mines-set-numbers)
   (mines-show))
 
-(defvar mines-mode-map
-  (let ((map (make-sparse-keymap 'mines-mode-map)))
+(define-derived-mode mines-mode special-mode "mines"
+  (let ((map mines-mode-map))
     (define-key map [right] 'mines-go-right)
     (define-key map "f" 'mines-go-right)
     (define-key map "l" 'mines-go-right)
@@ -587,11 +587,7 @@ call this command again, the cell is unflagged."
     ;; (define-key map "a" 'mines-flag-cell)
     (define-key map "1" 'mines-flag-cell)
     (define-key map "m" 'mines-flag-cell)
-    (define-key map "r" 'mines)
-    map)
-  "Mode map for `mines-mode'.")
-
-(define-derived-mode mines-mode special-mode "mines"
+    (define-key map "r" 'mines))
   "Major mode for playing Minesweeper.")
 
 
