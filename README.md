@@ -25,3 +25,7 @@ progress in the game.
 
 The game is completed once all mine-free cells are revealed, that is,
 when the only uncovered cells equals the number of hidden mines.
+
+### Screenshots
+
+![ScreenShot](/screenshots/screenshot-minesweeper.png)
