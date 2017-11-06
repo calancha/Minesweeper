@@ -19,9 +19,9 @@ command **mines-dig**.
 
 
 If you think that an uncovered cell has a mine, you might flag it
-with **mines-flag-cell**; if you call this command again in the same
-cell the cell is unflagged.  This is useful to visualize your
-progress in the game.
+with **mines-flag-cell**: the character **!** is shown in that cell.
+If you call this command again in the same cell then unflags it.  This is
+useful to visualize your progress in the game.
 
 The game is completed once all mine-free cells are revealed, that is,
 when the only uncovered cells equals the number of hidden mines.
