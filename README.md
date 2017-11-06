@@ -28,4 +28,8 @@ when the only uncovered cells equals the number of hidden mines.
 
 ### Screenshots
 
+minesweeper screenshot:
 ![ScreenShot](/screenshots/screenshot-minesweeper.png)
+
+Game over screenshot:
+![ScreenShot](/screenshots/screenshot-minesweeper-gameover.png)
