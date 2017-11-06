@@ -139,16 +139,19 @@ If `custom' then ask user for these numbers."
      (cond (,cond1
             (setq mines-number-cols 8
                   mines-number-rows 8
-                  mines-number-mines 10))
+                  mines-number-mines 10
+                  mines-difficulty-level 'easy))
            (,cond2
             (setq mines-number-cols 16
                   mines-number-rows 16
-                  mines-number-mines 40))
+                  mines-number-mines 40
+                  mines-difficulty-level 'medium))
            (,cond3
             (setq mines-number-cols 30
                   mines-number-rows 16
-                  mines-number-mines 99))
-           (,cond4 ,@body))
+                  mines-number-mines 99
+                  mines-difficulty-level 'hard))
+           (,cond4 (setq mines-difficulty-level 'custom) ,@body))
      (setq mines-number-cells (* mines-number-rows mines-number-cols))))
 
 
