@@ -392,7 +392,7 @@ If `custiom' then ask user for these numbers."
 (defun mines-game-over ()
   "Offer play a new game after uncover a bomb."
   (let ((inhibit-read-only t))
-    (put-text-property (point) (1+ (point)) 'face '(error fontified t))
+    (put-text-property (point) (1+ (point)) 'face 'error)
     (mines--show-all)
     (if (yes-or-no-p "Game over! Play again? ")
         (mines)
