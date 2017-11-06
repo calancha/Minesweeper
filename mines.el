@@ -329,25 +329,29 @@ If `custiom' then ask user for these numbers."
       (list rows cols mines))))
 
 (defun mines--insert (elt idx &optional props null-str flag-or-unflag)
-  (let ((str (cond ((null elt)
-                    (if (null null-str)
-                        (format " %c " mines-uncover-cell-char)
-                      ;; Uncover all its uncovered neighbours.
-                      (save-excursion
-                        (dolist (x (mines-get-neighbours idx))
-                          (mines-goto x)
-                          (unless (get-text-property (point) 'done)
-                            (push x mines-undone-neighbours))))
-                      (format " %s " null-str)))
-                   ((eq flag-or-unflag 'unflag)
-                    (format " %c " mines-uncover-cell-char))
-                   ((and (memq 'flag props) (eq flag-or-unflag 'flag))
-                    (format " %c " mines-flagged-cell-char))
-                   ((integerp elt) (format " %d " elt))
-                   (t (format " %c " mines-empty-cell-mine))))
-        (pos (point))
-        (inhibit-read-only t))
-    (insert str)
+  (let* ((face nil)
+         (str (cond ((null elt)
+                     (if (null null-str)
+                         (format " %c " mines-uncover-cell-char)
+                       ;; Uncover all its uncovered neighbours.
+                       (save-excursion
+                         (dolist (x (mines-get-neighbours idx))
+                           (mines-goto x)
+                           (unless (get-text-property (point) 'done)
+                             (push x mines-undone-neighbours))))
+                       (format " %s " null-str)))
+                    ((eq flag-or-unflag 'unflag)
+                     (format " %c " mines-uncover-cell-char))
+                    ((and (memq 'flag props) (eq flag-or-unflag 'flag))
+                     (setq face 'warning)
+                     (format " %c " mines-flagged-cell-char))
+                    ((integerp elt) (format " %d " elt))
+                    (t (format " %c " mines-empty-cell-mine))))
+         (pos (point))
+         (inhibit-read-only t))
+    (if face
+        (insert (propertize str 'font-lock-face face))
+      (insert str))
     (when (= (cadr (mines-index-2-matrix idx)) (1- mines-number-cols))
       (backward-delete-char 1)
       (insert "\n"))
@@ -387,6 +391,9 @@ If `custiom' then ask user for these numbers."
   (dolist (to mines-mine-positions)
     (save-excursion
       (mines-goto to)
+      ;; Drop all flags before show the mines; that drop the flag faces.
+      (when (eq (following-char) mines-flagged-cell-char)
+        (mines--update-cell to mines-uncover-cell-char 'unflag))
       (mines-dig 'show-mines))))
 
 (defun mines-game-over ()
@@ -438,6 +445,9 @@ If called again then unflag it."
         (inhibit-read-only t))
     (when (eq flag-or-unflag 'unflag)
       (setq prop `(idx ,idx)))
+    ;; If unflagging, then remove additional text properties.
+    (when (eq flag-or-unflag 'unflag)
+      (remove-text-properties (point) to '(font-lock-face flag)))
     (delete-region (point) to)
     (mines--insert elt idx prop (string mines-empty-cell-char) flag-or-unflag)
     (unless flag-or-unflag (aset mines-state idx '@))
@@ -455,8 +465,7 @@ If called again then unflag it."
                    ()
                    (let ((idx (mines-current-pos))
                          (inhibit-read-only t)
-                         (done (get-text-property (point) 'done))
-                         abort)
+                         (done (get-text-property (point) 'done)))
                      (cond ((null idx) (user-error "Wrong position!"))
                            (done nil) ; Already updated.
                            (t
@@ -469,18 +478,19 @@ If called again then unflag it."
                                   (setq elt (aref mines-grid ok-pos))
                                   (cl-rotatef (aref mines-grid idx) (aref mines-grid ok-pos))))
                               ;; If the cell is flagged ask for confirmation.
-                              (if (eq (following-char) mines-flagged-cell-char)
+                              (if (and (not show-mines) (eq (following-char) mines-flagged-cell-char))
                                   (if (yes-or-no-p "This cell is flagged as having a bomb.  Uncover it? ")
-                                      (mines--update-cell idx elt)
-                                    (message "OK, canceled")
-                                    (setq abort t))
+                                      (progn ; Unflag first.
+                                        (mines--update-cell idx mines-uncover-cell-char 'unflag)
+                                        (mines--update-cell idx elt))
+                                    (message "OK, canceled"))
                                 (mines--update-cell idx elt))
                               ;; Check for end of game.
-                              (cond ((and (not abort) (not show-mines) (eq elt t))
+                              (cond ((and (not show-mines) (eq elt t))
                                      ;; We lost the game; show all the mines.
                                      (mines-game-over))
                                     (t
-                                     (when (and (not abort) (not show-mines) (mines-end-p))
+                                     (when (and (not show-mines) (mines-end-p))
                                        (mines-game-completed))))))))))
         (uncover-fn)
         (when mines-undone-neighbours
