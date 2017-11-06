@@ -476,7 +476,19 @@ If called again then unflag it."
                                 (let ((ok-pos (cl-position-if-not (lambda (x) (eq t x)) mines-grid)))
                                   (message "Avoided game over in the first move")
                                   (setq elt (aref mines-grid ok-pos))
-                                  (cl-rotatef (aref mines-grid idx) (aref mines-grid ok-pos))))
+                                  ;; Update mine positions.
+                                  (setf (nth (cl-position idx mines-mine-positions)
+                                             mines-mine-positions) ok-pos)
+                                  ;; We must update `mines-grid' further: the neighbour cells
+                                  ;; to IDX must show now a lower number of near bombs; the
+                                  ;; cells near the new position of the bomb must increase their
+                                  ;; numbers.
+                                  (setq mines-grid (make-vector mines-number-cells nil))
+                                  ;; Add the mine positions.
+                                  (dolist (pos mines-mine-positions)
+                                    (aset mines-grid pos t))
+                                  ;; Update the numbers on neighbour cells.
+                                  (mines-set-numbers)))
                               ;; If the cell is flagged ask for confirmation.
                               (if (and (not show-mines) (eq (following-char) mines-flagged-cell-char))
                                   (if (yes-or-no-p "This cell is flagged as having a bomb.  Uncover it? ")
