@@ -1,6 +1,8 @@
 # Minesweeper
 Play minesweeper in Emacs
 
+[![Build Status](https://api.travis-ci.org/calancha/Minesweeper.svg?branch=master)](https://travis-ci.org/calancha/Minesweeper)
+
 This is an elisp implementation of the classical minesweeper game.
 The target is localize all hidden mines (bombs) in a rectangular board
 without detonating them.  You reveal the content of a cell with the
