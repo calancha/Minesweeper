@@ -6,7 +6,7 @@
 ;; Created: 2017-10-28
 ;; Keywords: games
 ;; Version: 1.0
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
 ;; url: https://github.com/calancha/Minesweeper
 
 ;; This file is part of GNU Emacs.
