@@ -454,8 +454,8 @@ If called again then unflag it."
   (interactive)
   (when (mines-mines-mode-p)
     (if mines-game-over
-        (user-error "Current game is over.  Try `%s' to start a new one."
-                    (substitute-command-keys "\\[mines\]"))
+        (user-error "Current game is over.  Try `%s' to start a new one"
+                    (substitute-command-keys "\\[mines]"))
       (skip-chars-forward "[:blank:]") ; Set point in the center of the cell.
       (cl-labels ((uncover-fn
                    ()
@@ -484,7 +484,7 @@ If called again then unflag it."
                                     (aset mines-grid pos t))
                                   ;; Update the numbers on neighbour cells.
                                   (mines-set-numbers)
-                                  ;; Update current element. 
+                                  ;; Update current element.
                                   (setq elt (aref mines-grid idx))))
                               ;; If the cell is flagged ask for confirmation.
                               (if (and (not show-mines) (eq (following-char) mines-flagged-cell-char))
@@ -511,6 +511,8 @@ If called again then unflag it."
 
 ;;;###autoload
 (defun mines (&optional arg)
+  ;; FIXME: I think most of this doc should be moved to `mines-mode' so it
+  ;; is shown to the user when he uses the standard `describe-mode' command.
   "Play the minesweeper game.
 Called with a prefix prompt for the difficulty level.
 
@@ -534,7 +536,7 @@ For instance, following is a possible configuration:
 @ @ @ @ @
 
 You can move between cells using the arrow keys, or using vi
-or emacs keystrokes (↑↓→←) = (kjlh) = (pnfb).
+or Emacs keystrokes (↑↓→←) = (kjlh) = (pnfb).
 
 You can flag a cell as having a mine with \\[mines-flag-cell\]; if you
 call this command again, the cell is unflagged."

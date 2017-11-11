@@ -50,7 +50,7 @@
       (should-not (mines-first-move-p))
       ;; 2nd trial might end the game.
       (cl-letf (((symbol-function 'yes-or-no-p)
-                 (lambda (&rest arg) (error "Fail"))))
+                 (lambda (&rest _) (error "Fail"))))
         (should-error (mines-dig))))
     (when (buffer-live-p buf) (kill-buffer buf))))
 
@@ -94,19 +94,20 @@
       (when (buffer-live-p buf) (kill-buffer buf)))))
 
 (ert-deftest mines-test-indices ()
-  (= 0 (mines-matrix-2-index 0 0))
-  (= 1 (mines-matrix-2-index 0 1))
-  (= (1- mines-number-cols)
-     (mines-matrix-2-index 0 (1- mines-number-cols)))
-  (= (* mines-number-cols (1- mines-number-rows))
-     (mines-matrix-2-index (1- mines-number-rows) 0))
-  (= (1- mines-number-cells)
-     (mines-matrix-2-index (1- mines-number-rows) (1- mines-number-cols)))
+  (should (= 0 (mines-matrix-2-index 0 0)))
+  (should (= 1 (mines-matrix-2-index 0 1)))
+  (should (= (1- mines-number-cols)
+             (mines-matrix-2-index 0 (1- mines-number-cols))))
+  (should (= (* mines-number-cols (1- mines-number-rows))
+             (mines-matrix-2-index (1- mines-number-rows) 0)))
+  (should (= (1- mines-number-cells)
+             (mines-matrix-2-index (1- mines-number-rows)
+                                   (1- mines-number-cols))))
   ;; `mines-matrix-2-index' consistent with `mines-index-2-matrix'.
   (dolist (idx (list 0 1 (1- mines-number-cols)
                      (* mines-number-cols (1- mines-number-rows))
                      (1- mines-number-cells)))
-    (= idx (apply #'mines-matrix-2-index (mines-index-2-matrix idx)))))
+    (should (= idx (apply #'mines-matrix-2-index (mines-index-2-matrix idx))))))
 
 (ert-deftest mines-test-neighbours ()
   (cl-flet ((set-equalp (x y)
