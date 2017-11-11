@@ -511,35 +511,8 @@ If called again then unflag it."
 
 ;;;###autoload
 (defun mines (&optional arg)
-  ;; FIXME: I think most of this doc should be moved to `mines-mode' so it
-  ;; is shown to the user when he uses the standard `describe-mode' command.
   "Play the minesweeper game.
-Called with a prefix prompt for the difficulty level.
-
-The target of the game is discover which cells contain mines.
-You reveal the content of the mine at point with \\[mines-dig\].
-1. If you look at one cell containing a mine you lost.
-
-2. A cell without a mine having N neighbour cells containing mines
-   shows N when you look at it.
-
-3. A cell without a mine and without neighbour cells having mines
-   shows the character `@' when you look at it; all adjacent cells
-   are recursively revealed.
-
-For instance, following is a possible configuration:
-
-@ @ @ @ @
-1 2 2 1 @
-1 x x 1 @
-1 2 2 1 @
-@ @ @ @ @
-
-You can move between cells using the arrow keys, or using vi
-or Emacs keystrokes (↑↓→←) = (kjlh) = (pnfb).
-
-You can flag a cell as having a mine with \\[mines-flag-cell\]; if you
-call this command again, the cell is unflagged."
+Called with a prefix prompt for the difficulty level."
   (interactive
    (let* ((prefix current-prefix-arg)
           (choice (and prefix
@@ -587,7 +560,32 @@ call this command again, the cell is unflagged."
     (define-key map "1" 'mines-flag-cell)
     (define-key map "m" 'mines-flag-cell)
     (define-key map "r" 'mines))
-  "Major mode for playing Minesweeper.")
+  "Major mode for playing Minesweeper.
+
+The target of the game is discover which cells contain mines.
+You reveal the content of the mine at point with \\[mines-dig\].
+1. If you look at one cell containing a mine you lost.
+
+2. A cell without a mine with N neighbour cells containing mines
+   shows N when you look at it.
+
+3. A cell without a mine and without neighbour cells having mines
+   shows the character `@' when you look at it; all adjacent cells
+   are recursively revealed.
+
+For instance, following is a possible configuration:
+
+@ @ @ @ @
+1 2 2 1 @
+1 x x 1 @
+1 2 2 1 @
+@ @ @ @ @
+
+You can move between cells using the arrow keys, or using vi
+or Emacs keystrokes (↑↓→←) = (kjlh) = (pnfb).
+
+You can flag a cell as having a mine with \\[mines-flag-cell\]; if you
+call this command again, the cell is unflagged.")
 
 
 ;;; Predicates
