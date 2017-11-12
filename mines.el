@@ -5,7 +5,7 @@
 ;; Author: Tino Calancha <tino.calancha@gmail.com>
 ;; Created: 2017-10-28
 ;; Keywords: games
-;; Version: 1.1
+;; Version: 1.2
 ;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
 ;; url: https://github.com/calancha/Minesweeper
 
