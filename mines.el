@@ -541,25 +541,6 @@ Called with a prefix prompt for the difficulty level."
   (mines-show))
 
 (define-derived-mode mines-mode special-mode "mines"
-  (let ((map mines-mode-map))
-    (define-key map [right] 'mines-go-right)
-    (define-key map "f" 'mines-go-right)
-    (define-key map "l" 'mines-go-right)
-    (define-key map [left] 'mines-go-left)
-    (define-key map "b" 'mines-go-left)
-    (define-key map "h" 'mines-go-left)
-    (define-key map "p" 'mines-go-up)
-    (define-key map "k" 'mines-go-up)
-    (define-key map [up] 'mines-go-up)
-    (define-key map [down] 'mines-go-down)
-    (define-key map "n" 'mines-go-down)
-    (define-key map "j" 'mines-go-down)
-    (define-key map "x" 'mines-dig)
-    (define-key map "c" 'mines-dig)
-    ;; (define-key map "a" 'mines-flag-cell)
-    (define-key map "1" 'mines-flag-cell)
-    (define-key map "m" 'mines-flag-cell)
-    (define-key map "r" 'mines))
   "Major mode for playing Minesweeper.
 
 The target of the game is discover which cells contain mines.
@@ -585,7 +566,26 @@ You can move between cells using the arrow keys, or using vi
 or Emacs keystrokes (↑↓→←) = (kjlh) = (pnfb).
 
 You can flag a cell as having a mine with \\[mines-flag-cell\]; if you
-call this command again, the cell is unflagged.")
+call this command again, the cell is unflagged."
+  (let ((map mines-mode-map))
+    (define-key map [right] 'mines-go-right)
+    (define-key map "f" 'mines-go-right)
+    (define-key map "l" 'mines-go-right)
+    (define-key map [left] 'mines-go-left)
+    (define-key map "b" 'mines-go-left)
+    (define-key map "h" 'mines-go-left)
+    (define-key map "p" 'mines-go-up)
+    (define-key map "k" 'mines-go-up)
+    (define-key map [up] 'mines-go-up)
+    (define-key map [down] 'mines-go-down)
+    (define-key map "n" 'mines-go-down)
+    (define-key map "j" 'mines-go-down)
+    (define-key map "x" 'mines-dig)
+    (define-key map "c" 'mines-dig)
+    ;; (define-key map "a" 'mines-flag-cell)
+    (define-key map "1" 'mines-flag-cell)
+    (define-key map "m" 'mines-flag-cell)
+    (define-key map "r" 'mines)))
 
 
 ;;; Predicates
