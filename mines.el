@@ -509,18 +509,47 @@ If called again then unflag it."
                 (mines-goto to)
                 (uncover-fn)))))))))
 
+;; `read-multiple-choice' requires Emacs > 25.
+(defun mines--read-multiple-choice ()
+  (let (choice)
+    (if (> emacs-major-version 25)
+        (setq choice
+              (read-multiple-choice "Choose difficulty level: "
+                                    '((?e "Easy" "8 columns x 8 rows and 10 mines")
+                                      (?m "Medium" "16 columns x 16 rows and 40 mines")
+                                      (?h "Hard" "30 columns x 16 rows and 99 mines")
+                                      (?c "Custom" "C columns x R rows and M mines"))))
+      (let ((help-msg "Choose difficulty level: 
+
+e: [e] Easy              m: Medium                h: [h] Hard              c: [c] Custom
+8 columns x 8 rows       16 columns x 16 rows     30 columns x 16 rows     C columns x R rows
+and 10 mines             and 40 mines             and 99 mines             and M mines
+")                                                                           
+            (answer
+             (read-char "Choose difficulty level:  ([e] Easy, [m] Medium, [h] Hard, [c] Custom, [?]): ")))
+        (cl-flet ((show-help ()
+                             (when (eq answer ??)
+                               (let ((help-buf (get-buffer-create "*Multiple Choice Help*")))
+                                 (setq answer nil)
+                                 (with-current-buffer help-buf
+                                   (and (zerop (buffer-size)) (insert help-msg))
+                                   (display-buffer help-buf))))))
+          (if (eq answer ??) (show-help))
+          (while (not (memq answer '(?e ?m ?h ?c ??)))
+            (setq answer (read-char "Choose difficulty level:  ([e] Easy, [m] Medium, [h] Hard, [c] Custom, [?]): "))
+            (show-help))
+          (cond ((eq answer ?e) (list ?e "Easy" "8 columns x 8 rows and 10 mines"))
+                ((eq answer ?m) (list ?m "Medium" "16 columns x 16 rows and 40 mines"))
+                ((eq answer ?h) (list ?h "Hard" "30 columns x 16 rows and 99 mines"))
+                ((eq answer ?c) (list ?c "Custom" "C columns x R rows and M mines"))))))))
+
 ;;;###autoload
 (defun mines (&optional arg)
   "Play the minesweeper game.
 Called with a prefix prompt for the difficulty level."
   (interactive
    (let* ((prefix current-prefix-arg)
-          (choice (and prefix
-                       (read-multiple-choice "Choose difficulty level: "
-                                             '((?e "Easy" "8 columns x 8 rows and 10 mines")
-                                               (?m "Medium" "16 columns x 16 rows and 40 mines")
-                                               (?h "Hard" "30 columns x 16 rows and 99 mines")
-                                               (?c "Custom" "C columns x R rows and M mines"))))))
+          (choice (and prefix (mines--read-multiple-choice))))
      (when choice
        (mines-init (eq ?e (car choice))
                    (eq ?m (car choice))

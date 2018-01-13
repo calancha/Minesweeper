@@ -229,6 +229,22 @@
               (should (= numb (mines--near-bombs row col))))))))
     (when (buffer-live-p buf) (kill-buffer buf))))
 
+(ert-deftest mines-test-read-multiple-choice ()
+  (if (> emacs-major-version 25)
+      (dolist (char '(?e ?m ?h ??))
+        (cl-letf* (((symbol-function #'read-char) (lambda () char))
+                   (str (cdr (assoc char '((?e . "Easy") (?m . "Medium") (?h . "Hard") (?? . "Help"))))))
+          (should (equal (list char str)
+                         (read-multiple-choice "Choose level "
+                                               '((?e "Easy") (?m "Medium") (?h "Hard") (?? "Help")))))))
+    (cl-block :help
+      ;; When char is ? `mines--read-multiple-choice' enter a loop until char
+      ;; is a different character.  Exit the loop.
+      (dolist (char '(?e ?m ?h ??))
+        (cl-letf (((symbol-function #'read-char)
+                   (lambda (&rest _) (if (eq char ??) (cl-return-from :help nil) char))))
+          (should (mines--read-multiple-choice)))))))
+
 
 (provide 'mines-tests)
 ;;; mines-tests.el ends here
