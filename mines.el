@@ -5,7 +5,7 @@
 ;; Author: Tino Calancha <tino.calancha@gmail.com>
 ;; Created: 2017-10-28
 ;; Keywords: games
-;; Version: 1.2
+;; Version: 1.3
 ;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
 ;; url: https://github.com/calancha/Minesweeper
 
@@ -401,18 +401,93 @@ If `custom' then ask user for these numbers."
         (mines)
       (setq mines-game-over t))))
 
+;; Extracted from `gamegrid-add-score-with-update-game-score'.
+(defun mines--score-file (file)
+  "Return full filename of score file."
+  (let ((gamegrid-shared-game-dir
+	     (not (zerop (logand (or (file-modes
+				                  (expand-file-name "update-game-score"
+						                            exec-directory))
+				                 0)
+			                 #o6000)))))
+    (cond ((file-name-absolute-p file) file)
+	      ((and gamegrid-shared-game-dir
+		        (file-exists-p (expand-file-name file shared-game-score-directory)))
+           (expand-file-name file shared-game-score-directory))
+	      ;; Else: Use a score file in the user's home directory.
+	      (t
+	       (unless (file-exists-p
+		            (directory-file-name gamegrid-user-score-file-directory))
+	         (make-directory gamegrid-user-score-file-directory t))
+           (expand-file-name file gamegrid-user-score-file-directory)))))
+
+(defun mines--number-of-records (file)
+  "Return number of records in FILE."
+  (if (file-exists-p file)
+      (with-temp-buffer
+        (insert-file-contents file)
+        (count-lines (point-min) (point-max)))
+    0))
+
+(defun mines--worst-score (file)
+  "Return worst score in FILE."
+  (when (file-exists-p file)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (when (/= (point-min) (point-max))
+        (goto-char (point-max))
+        (while (and (looking-at "^$") (/= (point) (point-min)))
+          (forward-line -1))
+        (unless (looking-at "^$")
+          (read (current-buffer)))))))
+
+(defun mines--sort-score-file (file &optional limit)
+  "Sort FILE lexicographically using the score column.
+Keep LIMIT number of records in the file; default to
+`gamegrid-score-file-length'.
+
+Note that `gamegrid-add-score' assumes that the score file is a
+high-score-file, i.e., getting a higher score means a better result.
+
+Instead, in this file the score is the number of seconds to complete
+the game, i.e., getting a shorter score means a better result.
+After sorting, games completed with shorter times appear first."
+  (when (file-exists-p file)
+    (with-temp-file file
+      (insert
+       (with-temp-buffer
+         (insert-file-contents file) (buffer-string)))
+      (sort-fields 1 (point-min) (point-max))
+      (goto-char (point-min))
+      (forward-line (or limit gamegrid-score-file-length))
+      (delete-region (point) (point-max)))))
+
 (defun mines-game-completed ()
   (setq mines-end-time (current-time))
   (let* ((score (time-to-seconds
                  (time-subtract mines-end-time mines-init-time)))
          (elapsed-time (format-seconds "%Y, %D, %H, %M, %z%S"
-                                       score)))
-    ;; save score
-    (gamegrid-add-score (format "mines-rows-%d-cols-%d-mines-%d-scores"
-                                mines-number-rows
-                                mines-number-cols
-                                mines-number-mines)
-                        score)
+                                       score))
+         (score-file (mines--score-file
+                      (format "mines-rows-%d-cols-%d-mines-%d-scores"
+                              mines-number-rows
+                              mines-number-cols
+                              mines-number-mines)))
+         (worst-score (mines--worst-score score-file)))
+    ;; Do not save RECORD if we already have `gamegrid-score-file-length'
+    ;; records and RECORD > than the largest one.
+    (when (or (/= gamegrid-score-file-length
+                  (mines--number-of-records score-file))
+              (not worst-score)
+              (<= score worst-score))
+      ;; Sort `score-file' and prepare space for a new record.
+      (mines--sort-score-file score-file (1- gamegrid-score-file-length))
+      ;; save score
+      (gamegrid-add-score score-file score)
+      ;; Sort `score-file' again and update the buffer visiting it.
+      (mines--sort-score-file score-file)
+      (with-current-buffer (find-buffer-visiting score-file)
+        (revert-buffer nil 'noconfirm)))
     (message (format "Well done %s, you have completed it in %s!"
                      user-login-name elapsed-time))))
 
