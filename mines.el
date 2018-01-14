@@ -5,7 +5,7 @@
 ;; Author: Tino Calancha <tino.calancha@gmail.com>
 ;; Created: 2017-10-28
 ;; Keywords: games
-;; Version: 1.4
+;; Version: 1.5
 ;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
 ;; url: https://github.com/calancha/Minesweeper
 
@@ -545,6 +545,15 @@ If called again then unflag it."
                            (done nil) ; Already updated.
                            (t
                             (let ((elt (aref mines-grid idx)))
+                              (cl-flet ((game-end-fn
+                                         ()
+                                         ;; Check for end of game.
+                                         (cond ((and (not show-mines) (eq elt t))
+                                                ;; We lost the game; show all the mines.
+                                                (mines-game-over))
+                                               (t
+                                                (when (and (not show-mines) (mines-end-p))
+                                                  (mines-game-completed))))))
                               ;; Don't end the game in the first trial when
                               ;; `mines-protect-first-move' is non-nil.
                               (when (and (eq elt t) mines-protect-first-move (mines-first-move-p))
@@ -565,21 +574,17 @@ If called again then unflag it."
                                   (mines-set-numbers)
                                   ;; Update current element.
                                   (setq elt (aref mines-grid idx))))
-                              ;; If the cell is flagged ask for confirmation.
-                              (if (and (not show-mines) (eq (following-char) mines-flagged-cell-char))
-                                  (if (yes-or-no-p "This cell is flagged as having a bomb.  Uncover it? ")
-                                      (progn ; Unflag first.
-                                        (mines--update-cell idx mines-uncover-cell-char 'unflag)
-                                        (mines--update-cell idx elt))
-                                    (message "OK, canceled"))
-                                (mines--update-cell idx elt))
-                              ;; Check for end of game.
-                              (cond ((and (not show-mines) (eq elt t))
-                                     ;; We lost the game; show all the mines.
-                                     (mines-game-over))
+                              (cond ((and (not show-mines) (eq (following-char) mines-flagged-cell-char))
+                                     ;; If the cell is flagged ask for confirmation.
+                                     (cond ((yes-or-no-p "This cell is flagged as having a bomb.  Uncover it? ")
+                                            ;; Unflag first.
+                                            (mines--update-cell idx mines-uncover-cell-char 'unflag)
+                                            (mines--update-cell idx elt)
+                                            (game-end-fn))
+                                           (t (message "OK, canceled"))))
                                     (t
-                                     (when (and (not show-mines) (mines-end-p))
-                                       (mines-game-completed))))))))))
+                                     (mines--update-cell idx elt)
+                                     (game-end-fn))))))))))
         (uncover-fn)
         (when mines-undone-neighbours
           (while mines-undone-neighbours
