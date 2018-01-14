@@ -5,7 +5,7 @@
 ;; Author: Tino Calancha <tino.calancha@gmail.com>
 ;; Created: 2017-10-28
 ;; Keywords: games
-;; Version: 1.3
+;; Version: 1.4
 ;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
 ;; url: https://github.com/calancha/Minesweeper
 
@@ -453,14 +453,20 @@ Instead, in this file the score is the number of seconds to complete
 the game, i.e., getting a shorter score means a better result.
 After sorting, games completed with shorter times appear first."
   (when (file-exists-p file)
-    (with-temp-file file
-      (insert
-       (with-temp-buffer
-         (insert-file-contents file) (buffer-string)))
-      (sort-fields 1 (point-min) (point-max))
-      (goto-char (point-min))
-      (forward-line (or limit gamegrid-score-file-length))
-      (delete-region (point) (point-max)))))
+    (let ((buf (get-file-buffer file)))
+      (with-temp-file file
+        (insert
+         (with-temp-buffer
+           (insert-file-contents file) (buffer-string)))
+        (sort-fields 1 (point-min) (point-max))
+        (goto-char (point-min))
+        (forward-line (or limit gamegrid-score-file-length))
+        (delete-region (point) (point-max)))
+      ;; If there is a buffer visiting FILE, then revert it.
+      (when buf
+        (with-current-buffer buf
+          (revert-buffer nil 'noconfirm)
+          (read-only-mode 1))))))
 
 (defun mines-game-completed ()
   (setq mines-end-time (current-time))
@@ -485,9 +491,7 @@ After sorting, games completed with shorter times appear first."
       ;; save score
       (gamegrid-add-score score-file score)
       ;; Sort `score-file' again and update the buffer visiting it.
-      (mines--sort-score-file score-file)
-      (with-current-buffer (find-buffer-visiting score-file)
-        (revert-buffer nil 'noconfirm)))
+      (mines--sort-score-file score-file))
     (message (format "Well done %s, you have completed it in %s!"
                      user-login-name elapsed-time))))
 
