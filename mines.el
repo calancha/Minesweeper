@@ -709,7 +709,7 @@ call this command again, the cell is unflagged."
 
 (defun mines-end-p ()
   "Return non-nil when the game is completed."
-  (equal mines-mine-positions (mines--find-pos nil mines-state)))
+  (= mines-number-mines (length (mines--find-pos nil mines-state))))
 
 (defun mines-first-move-p ()
   "Return non-nil if any cell has been revealed yet."
